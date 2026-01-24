@@ -1,0 +1,803 @@
+{
+  "info": {
+    "name": "Retro Route - Delivery System",
+    "description": "API collection for the delivery system with driver management",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Customer APIs",
+      "item": [
+        {
+          "name": "Create Order (with delivery date)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"addressId\": \"YOUR_ADDRESS_ID\",\n    \"deliveryCharges\": 50,\n    \"scheduledDeliveryDate\": \"2026-01-20\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/order/create-order",
+              "host": ["{{baseUrl}}"],
+              "path": ["order", "create-order"]
+            },
+            "description": "Customer creates an order with scheduled delivery date"
+          }
+        },
+        {
+          "name": "Get My Orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/order/get-all-orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["order", "get-all-orders"]
+            },
+            "description": "Customer gets all their orders"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin APIs - Driver Management",
+      "item": [
+        {
+          "name": "Get All Drivers",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/order/get-all-drivers",
+              "host": ["{{baseUrl}}"],
+              "path": ["order", "get-all-drivers"]
+            },
+            "description": "Admin gets list of all drivers"
+          }
+        },
+        {
+          "name": "Get Available Drivers Only",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/order/get-all-drivers?available=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["order", "get-all-drivers"],
+              "query": [
+                {
+                  "key": "available",
+                  "value": "true"
+                }
+              ]
+            },
+            "description": "Admin gets list of available drivers only"
+          }
+        },
+        {
+          "name": "Get Unassigned Orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/order/unassigned-orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["order", "unassigned-orders"]
+            },
+            "description": "Admin gets all orders that have no driver assigned"
+          }
+        },
+        {
+          "name": "Get Unassigned Orders by Date",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/order/unassigned-orders?date=2026-01-20",
+              "host": ["{{baseUrl}}"],
+              "path": ["order", "unassigned-orders"],
+              "query": [
+                {
+                  "key": "date",
+                  "value": "2026-01-20"
+                }
+              ]
+            },
+            "description": "Admin gets unassigned orders filtered by delivery date"
+          }
+        },
+        {
+          "name": "Assign Driver to Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"orderId\": \"YOUR_ORDER_ID\",\n    \"driverId\": \"YOUR_DRIVER_ID\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/order/assign-driver",
+              "host": ["{{baseUrl}}"],
+              "path": ["order", "assign-driver"]
+            },
+            "description": "Admin assigns a driver to an order"
+          }
+        },
+        {
+          "name": "Unassign Driver from Order",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"orderId\": \"YOUR_ORDER_ID\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/order/unassign-driver",
+              "host": ["{{baseUrl}}"],
+              "path": ["order", "unassign-driver"]
+            },
+            "description": "Admin removes driver from an order"
+          }
+        },
+        {
+          "name": "Get All Orders (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/order/all-orders-admin",
+              "host": ["{{baseUrl}}"],
+              "path": ["order", "all-orders-admin"]
+            },
+            "description": "Admin gets all orders with driver info"
+          }
+        },
+        {
+          "name": "Get All Orders - Filtered",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/order/all-orders-admin?status=Pending&date=2026-01-20&page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["order", "all-orders-admin"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "Pending",
+                  "description": "Filter by status: Pending, Confirmed, Picked Up, Shipped, Out for Delivery, Delivered, Cancelled, Delayed"
+                },
+                {
+                  "key": "date",
+                  "value": "2026-01-20",
+                  "description": "Filter by scheduled delivery date"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Admin gets all orders with filters"
+          }
+        },
+        {
+          "name": "Update Order Status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"orderId\": \"YOUR_ORDER_ID\",\n    \"status\": \"Confirmed\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/order/update-order-status",
+              "host": ["{{baseUrl}}"],
+              "path": ["order", "update-order-status"]
+            },
+            "description": "Admin updates order status. Valid statuses: Pending, Confirmed, Picked Up, Shipped, Out for Delivery, Delivered, Cancelled, Delayed"
+          }
+        },
+        {
+          "name": "Update Payment Status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"orderId\": \"YOUR_ORDER_ID\",\n    \"paymentStatus\": \"Completed\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/order/update-order-payment-status",
+              "host": ["{{baseUrl}}"],
+              "path": ["order", "update-order-payment-status"]
+            },
+            "description": "Admin updates payment status. Valid statuses: Pending, Completed, Failed"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin APIs - Sales Stats",
+      "item": [
+        {
+          "name": "Get Total Sales",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/order/total-sales",
+              "host": ["{{baseUrl}}"],
+              "path": ["order", "total-sales"]
+            },
+            "description": "Admin gets total sales statistics"
+          }
+        },
+        {
+          "name": "Get Weekly Sales Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/order/weekly-sales-stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["order", "weekly-sales-stats"]
+            },
+            "description": "Admin gets weekly sales statistics"
+          }
+        },
+        {
+          "name": "Get Monthly Sales Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/order/monthly-sales-stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["order", "monthly-sales-stats"]
+            },
+            "description": "Admin gets monthly sales statistics"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Driver APIs",
+      "item": [
+        {
+          "name": "Get My Deliveries",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/order/my-deliveries",
+              "host": ["{{baseUrl}}"],
+              "path": ["order", "my-deliveries"]
+            },
+            "description": "Driver gets all assigned deliveries"
+          }
+        },
+        {
+          "name": "Get My Deliveries - By Date",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/order/my-deliveries?date=2026-01-20",
+              "host": ["{{baseUrl}}"],
+              "path": ["order", "my-deliveries"],
+              "query": [
+                {
+                  "key": "date",
+                  "value": "2026-01-20"
+                }
+              ]
+            },
+            "description": "Driver gets deliveries for a specific date"
+          }
+        },
+        {
+          "name": "Get My Deliveries - By Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/order/my-deliveries?status=Out for Delivery",
+              "host": ["{{baseUrl}}"],
+              "path": ["order", "my-deliveries"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "Out for Delivery"
+                }
+              ]
+            },
+            "description": "Driver gets deliveries filtered by status"
+          }
+        },
+        {
+          "name": "Update Delivery Status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"orderId\": \"YOUR_ORDER_ID\",\n    \"status\": \"Delivered\",\n    \"notes\": \"Left at front door\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/order/update-delivery-status",
+              "host": ["{{baseUrl}}"],
+              "path": ["order", "update-delivery-status"]
+            },
+            "description": "Driver updates delivery status. Valid statuses: Picked Up, Out for Delivery, Delivered, Delayed"
+          }
+        },
+        {
+          "name": "Update My Availability",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"isAvailable\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/order/update-availability",
+              "host": ["{{baseUrl}}"],
+              "path": ["order", "update-availability"]
+            },
+            "description": "Driver updates their availability status"
+          }
+        },
+        {
+          "name": "Get My Delivery Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/order/driver-stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["order", "driver-stats"]
+            },
+            "description": "Driver gets their delivery statistics"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reviews",
+      "item": [
+        {
+          "name": "Create Review",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"product_id_here\",\n  \"rating\": 5,\n  \"title\": \"Excellent product!\",\n  \"comment\": \"This product exceeded my expectations. Great quality and fast delivery.\",\n  \"images\": []\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/review/create",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "review", "create"]
+            },
+            "description": "Create a review for a purchased product. User must have purchased the product to leave a review."
+          }
+        },
+        {
+          "name": "Get Product Reviews",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/review/product/product_id_here?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "review", "product", "product_id_here"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Get all reviews for a specific product with pagination."
+          }
+        },
+        {
+          "name": "Get My Reviews",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/review/user/my-reviews",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "review", "user", "my-reviews"]
+            },
+            "description": "Get all reviews created by the authenticated user."
+          }
+        },
+        {
+          "name": "Update Review",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rating\": 4,\n  \"title\": \"Good product\",\n  \"comment\": \"Good quality, delivery was a bit slow\",\n  \"images\": []\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/review/update/review_id_here",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "review", "update", "review_id_here"]
+            },
+            "description": "Update your own review. Only the review owner can update their review."
+          }
+        },
+        {
+          "name": "Delete Review",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/review/delete/review_id_here",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "review", "delete", "review_id_here"]
+            },
+            "description": "Delete your own review. Only the review owner can delete their review."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Favorites",
+      "item": [
+        {
+          "name": "Add to Favorites",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"product_id_here\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/favorite/add",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "favorite", "add"]
+            },
+            "description": "Add a product to your favorites."
+          }
+        },
+        {
+          "name": "Remove from Favorites",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"product_id_here\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/favorite/remove",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "favorite", "remove"]
+            },
+            "description": "Remove a product from your favorites."
+          }
+        },
+        {
+          "name": "Get My Favorites",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/favorite/my-favorites?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "favorite", "my-favorites"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Get all products in your favorites list with pagination."
+          }
+        },
+        {
+          "name": "Check if Product is Favorite",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/favorite/check/product_id_here",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "favorite", "check", "product_id_here"]
+            },
+            "description": "Check if a specific product is in your favorites."
+          }
+        },
+        {
+          "name": "Get Product Favorite Count",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/favorite/count/product_id_here",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "favorite", "count", "product_id_here"]
+            },
+            "description": "Get total number of times a product has been favorited by all users."
+          }
+        }
+      ]
+    }
+  ]
+}

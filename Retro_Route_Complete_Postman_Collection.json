@@ -1,0 +1,1827 @@
+{
+  "info": {
+    "name": "Retro Route - Complete API Collection",
+    "description": "Complete API collection for Retro Route e-commerce backend with delivery system",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "User / Auth",
+      "item": [
+        {
+          "name": "Register (Send OTP)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"John Doe\",\n    \"email\": \"john@example.com\",\n    \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/user/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["user", "register"]
+            },
+            "description": "Step 1: Register a new user. Sends OTP to email for verification. User is NOT saved to database until OTP is verified. Can be called multiple times to resend OTP with updated details."
+          }
+        },
+        {
+          "name": "Verify Registration OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"john@example.com\",\n    \"otp\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/user/verify-registration-otp",
+              "host": ["{{baseUrl}}"],
+              "path": ["user", "verify-registration-otp"]
+            },
+            "description": "Step 2: Verify the OTP sent during registration. User is created in database only after successful OTP verification. OTP is valid for 10 minutes."
+          }
+        },
+        {
+          "name": "Resend Registration OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"john@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/user/resend-registration-otp",
+              "host": ["{{baseUrl}}"],
+              "path": ["user", "resend-registration-otp"]
+            },
+            "description": "Resend OTP for pending registration. Can be called unlimited times before registration is completed. OTP is valid for 10 minutes."
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"john@example.com\",\n    \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/user/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["user", "login"]
+            },
+            "description": "Login user and get access token"
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/user/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["user", "logout"]
+            },
+            "description": "Logout user"
+          }
+        },
+        {
+          "name": "Get User Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/user/get-user-details",
+              "host": ["{{baseUrl}}"],
+              "path": ["user", "get-user-details"]
+            },
+            "description": "Get logged in user's details"
+          }
+        },
+        {
+          "name": "Update User Details",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "name",
+                  "value": "John Updated",
+                  "type": "text"
+                },
+                {
+                  "key": "avatar",
+                  "type": "file",
+                  "src": "",
+                  "description": "Profile image (optional)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/user/update-user-details",
+              "host": ["{{baseUrl}}"],
+              "path": ["user", "update-user-details"]
+            },
+            "description": "Update user profile with optional avatar upload"
+          }
+        },
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/user/get-all-users",
+              "host": ["{{baseUrl}}"],
+              "path": ["user", "get-all-users"]
+            },
+            "description": "Get all users list"
+          }
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"john@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/user/forgot-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["user", "forgot-password"]
+            },
+            "description": "Step 1: Send OTP to email for password reset. OTP is valid for 1 hour."
+          }
+        },
+        {
+          "name": "Verify Forgot Password OTP",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"john@example.com\",\n    \"otp\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/user/forgot-password-otp-verify",
+              "host": ["{{baseUrl}}"],
+              "path": ["user", "forgot-password-otp-verify"]
+            },
+            "description": "Step 2: Verify the OTP sent to email. Must be completed before resetting password."
+          }
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"john@example.com\",\n    \"newPassword\": \"newpassword123\",\n    \"confirmPassword\": \"newpassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/user/reset-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["user", "reset-password"]
+            },
+            "description": "Step 3: Reset password after OTP verification. Requires newPassword and confirmPassword to match. Minimum 6 characters."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin Management",
+      "item": [
+        {
+          "name": "Get All Admins",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/user/get-all-admins",
+              "host": ["{{baseUrl}}"],
+              "path": ["user", "get-all-admins"]
+            },
+            "description": "Get all admin users"
+          }
+        },
+        {
+          "name": "Update Admin Details",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Admin Name\",\n    \"status\": \"Active\",\n    \"permissions\": [\"manage_orders\", \"manage_products\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/user/update-admin-details/:adminId",
+              "host": ["{{baseUrl}}"],
+              "path": ["user", "update-admin-details", ":adminId"],
+              "variable": [
+                {
+                  "key": "adminId",
+                  "value": "ADMIN_ID_HERE"
+                }
+              ]
+            },
+            "description": "Update admin user details"
+          }
+        },
+        {
+          "name": "Delete Admin",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/user/delete-admin/:adminId",
+              "host": ["{{baseUrl}}"],
+              "path": ["user", "delete-admin", ":adminId"],
+              "variable": [
+                {
+                  "key": "adminId",
+                  "value": "ADMIN_ID_HERE"
+                }
+              ]
+            },
+            "description": "Delete an admin user"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Category",
+      "item": [
+        {
+          "name": "Add Category",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "name",
+                  "value": "Electronics",
+                  "type": "text"
+                },
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": "",
+                  "description": "Category image"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/category/add-category",
+              "host": ["{{baseUrl}}"],
+              "path": ["category", "add-category"]
+            },
+            "description": "Add a new category (Admin)"
+          }
+        },
+        {
+          "name": "Get All Categories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/category/get-all-categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["category", "get-all-categories"]
+            },
+            "description": "Get all categories"
+          }
+        },
+        {
+          "name": "Update Category",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "name",
+                  "value": "Updated Category Name",
+                  "type": "text"
+                },
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": "",
+                  "description": "New category image (optional)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/category/update-category/:categoryId",
+              "host": ["{{baseUrl}}"],
+              "path": ["category", "update-category", ":categoryId"],
+              "variable": [
+                {
+                  "key": "categoryId",
+                  "value": "CATEGORY_ID_HERE"
+                }
+              ]
+            },
+            "description": "Update a category (Admin)"
+          }
+        },
+        {
+          "name": "Delete Category",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/category/delete-category/:categoryId",
+              "host": ["{{baseUrl}}"],
+              "path": ["category", "delete-category", ":categoryId"],
+              "variable": [
+                {
+                  "key": "categoryId",
+                  "value": "CATEGORY_ID_HERE"
+                }
+              ]
+            },
+            "description": "Delete a category (Admin)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Product",
+      "item": [
+        {
+          "name": "Add Product",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "name",
+                  "value": "iPhone 15 Pro",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "Latest Apple iPhone with A17 chip",
+                  "type": "text"
+                },
+                {
+                  "key": "price",
+                  "value": "999",
+                  "type": "text"
+                },
+                {
+                  "key": "category",
+                  "value": "CATEGORY_ID_HERE",
+                  "type": "text"
+                },
+                {
+                  "key": "stock",
+                  "value": "50",
+                  "type": "text"
+                },
+                {
+                  "key": "images",
+                  "type": "file",
+                  "src": "",
+                  "description": "Product images (up to 4)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/product/add-product",
+              "host": ["{{baseUrl}}"],
+              "path": ["product", "add-product"]
+            },
+            "description": "Add a new product with up to 4 images (Admin)"
+          }
+        },
+        {
+          "name": "Get All Products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/product/get-all-products",
+              "host": ["{{baseUrl}}"],
+              "path": ["product", "get-all-products"]
+            },
+            "description": "Get all products"
+          }
+        },
+        {
+          "name": "Get Products By Category",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/product/category/:categoryId?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["product", "category", ":categoryId"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number (optional, default: 1)"
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Number of products per page (optional, default: 20)"
+                }
+              ],
+              "variable": [
+                {
+                  "key": "categoryId",
+                  "value": "CATEGORY_ID_HERE",
+                  "description": "The MongoDB ObjectId of the category"
+                }
+              ]
+            },
+            "description": "Get all products belonging to a specific category. Supports pagination with page and limit query parameters."
+          }
+        },
+        {
+          "name": "Update Product",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "name",
+                  "value": "iPhone 15 Pro Max",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "Updated description",
+                  "type": "text"
+                },
+                {
+                  "key": "price",
+                  "value": "1199",
+                  "type": "text"
+                },
+                {
+                  "key": "stock",
+                  "value": "30",
+                  "type": "text"
+                },
+                {
+                  "key": "images",
+                  "type": "file",
+                  "src": "",
+                  "description": "New product images (optional, up to 4)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/product/update-product/:productId",
+              "host": ["{{baseUrl}}"],
+              "path": ["product", "update-product", ":productId"],
+              "variable": [
+                {
+                  "key": "productId",
+                  "value": "PRODUCT_ID_HERE"
+                }
+              ]
+            },
+            "description": "Update a product (Admin)"
+          }
+        },
+        {
+          "name": "Delete Product",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/product/delete-product/:productId",
+              "host": ["{{baseUrl}}"],
+              "path": ["product", "delete-product", ":productId"],
+              "variable": [
+                {
+                  "key": "productId",
+                  "value": "PRODUCT_ID_HERE"
+                }
+              ]
+            },
+            "description": "Delete a product (Admin)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Address",
+      "item": [
+        {
+          "name": "Add Address",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"addressLine\": \"123 Main Street\",\n    \"city\": \"New York\",\n    \"state\": \"NY\",\n    \"country\": \"USA\",\n    \"postalCode\": \"10001\",\n    \"phone\": \"+1234567890\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/address/add-address",
+              "host": ["{{baseUrl}}"],
+              "path": ["address", "add-address"]
+            },
+            "description": "Add a new address for the logged in user"
+          }
+        },
+        {
+          "name": "Update Address",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"addressId\": \"ADDRESS_ID_HERE\",\n    \"addressLine\": \"456 Updated Street\",\n    \"city\": \"Los Angeles\",\n    \"state\": \"CA\",\n    \"country\": \"USA\",\n    \"postalCode\": \"90001\",\n    \"phone\": \"+1987654321\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/address/update-address",
+              "host": ["{{baseUrl}}"],
+              "path": ["address", "update-address"]
+            },
+            "description": "Update an existing address"
+          }
+        },
+        {
+          "name": "Delete Address",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"addressId\": \"ADDRESS_ID_HERE\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/address/delete-address",
+              "host": ["{{baseUrl}}"],
+              "path": ["address", "delete-address"]
+            },
+            "description": "Delete an address"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cart",
+      "item": [
+        {
+          "name": "Add to Cart",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"productId\": \"PRODUCT_ID_HERE\",\n    \"quantity\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/cart/add-to-cart",
+              "host": ["{{baseUrl}}"],
+              "path": ["cart", "add-to-cart"]
+            },
+            "description": "Add a product to cart (creates cart if doesn't exist)"
+          }
+        },
+        {
+          "name": "Get Cart",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/cart/get-cart",
+              "host": ["{{baseUrl}}"],
+              "path": ["cart", "get-cart"]
+            },
+            "description": "Get user's cart with all items"
+          }
+        },
+        {
+          "name": "Clear Cart",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/cart/clear-cart",
+              "host": ["{{baseUrl}}"],
+              "path": ["cart", "clear-cart"]
+            },
+            "description": "Clear all items from cart"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Order - Customer",
+      "item": [
+        {
+          "name": "Create Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"addressId\": \"ADDRESS_ID_HERE\",\n    \"deliveryCharges\": 50,\n    \"scheduledDeliveryDate\": \"2026-01-25\",\n    \"customerNote\": \"Please call before delivery. Ring the bell twice.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/order/create-order",
+              "host": ["{{baseUrl}}"],
+              "path": ["order", "create-order"]
+            },
+            "description": "Create an order from cart items with scheduled delivery date and optional customer note"
+          }
+        },
+        {
+          "name": "Get My Orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/order/get-all-orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["order", "get-all-orders"]
+            },
+            "description": "Get all orders for the logged in customer"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Order - Admin",
+      "item": [
+        {
+          "name": "Get All Orders (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/order/all-orders-admin",
+              "host": ["{{baseUrl}}"],
+              "path": ["order", "all-orders-admin"]
+            },
+            "description": "Admin gets all orders with driver info"
+          }
+        },
+        {
+          "name": "Get All Orders - Filtered",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/order/all-orders-admin?status=Pending&date=2026-01-20&page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["order", "all-orders-admin"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "Pending",
+                  "description": "Filter by status: Pending, On My Way, Delivered"
+                },
+                {
+                  "key": "date",
+                  "value": "2026-01-20",
+                  "description": "Filter by scheduled delivery date"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Admin gets all orders with filters and pagination"
+          }
+        },
+        {
+          "name": "Get Unassigned Orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/order/unassigned-orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["order", "unassigned-orders"]
+            },
+            "description": "Admin gets all orders that have no driver assigned"
+          }
+        },
+        {
+          "name": "Get Unassigned Orders by Date",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/order/unassigned-orders?date=2026-01-20",
+              "host": ["{{baseUrl}}"],
+              "path": ["order", "unassigned-orders"],
+              "query": [
+                {
+                  "key": "date",
+                  "value": "2026-01-20"
+                }
+              ]
+            },
+            "description": "Admin gets unassigned orders filtered by delivery date"
+          }
+        },
+        {
+          "name": "Update Order Status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"orderId\": \"ORDER_ID_HERE\",\n    \"status\": \"On My Way\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/order/update-order-status",
+              "host": ["{{baseUrl}}"],
+              "path": ["order", "update-order-status"]
+            },
+            "description": "Admin updates order status. Valid statuses: Pending, On My Way, Delivered"
+          }
+        },
+        {
+          "name": "Update Payment Status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"orderId\": \"ORDER_ID_HERE\",\n    \"paymentStatus\": \"Completed\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/order/update-order-payment-status",
+              "host": ["{{baseUrl}}"],
+              "path": ["order", "update-order-payment-status"]
+            },
+            "description": "Admin updates payment status. Valid: Pending, Completed, Failed"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Order - Driver Management (Admin)",
+      "item": [
+        {
+          "name": "Get All Drivers",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/order/get-all-drivers",
+              "host": ["{{baseUrl}}"],
+              "path": ["order", "get-all-drivers"]
+            },
+            "description": "Admin gets list of all drivers"
+          }
+        },
+        {
+          "name": "Get Available Drivers Only",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/order/get-all-drivers?available=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["order", "get-all-drivers"],
+              "query": [
+                {
+                  "key": "available",
+                  "value": "true"
+                }
+              ]
+            },
+            "description": "Admin gets list of available drivers only"
+          }
+        },
+        {
+          "name": "Assign Driver to Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"orderId\": \"ORDER_ID_HERE\",\n    \"driverId\": \"DRIVER_ID_HERE\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/order/assign-driver",
+              "host": ["{{baseUrl}}"],
+              "path": ["order", "assign-driver"]
+            },
+            "description": "Admin assigns a driver to an order. Order status remains 'Pending' until driver starts delivery."
+          }
+        },
+        {
+          "name": "Unassign Driver from Order",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"orderId\": \"ORDER_ID_HERE\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/order/unassign-driver",
+              "host": ["{{baseUrl}}"],
+              "path": ["order", "unassign-driver"]
+            },
+            "description": "Admin removes driver from an order"
+          }
+        },
+        {
+          "name": "Get Driver Stats by Admin",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/order/driver-stats-admin/:driverId",
+              "host": ["{{baseUrl}}"],
+              "path": ["order", "driver-stats-admin", ":driverId"],
+              "variable": [
+                {
+                  "key": "driverId",
+                  "value": "DRIVER_ID_HERE"
+                }
+              ]
+            },
+            "description": "Admin gets detailed stats for a specific driver including: total deliveries, completed, pending, on my way, today's deliveries, completion rate, and recent deliveries"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Order - Driver App",
+      "item": [
+        {
+          "name": "Get My Deliveries",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/order/my-deliveries",
+              "host": ["{{baseUrl}}"],
+              "path": ["order", "my-deliveries"]
+            },
+            "description": "Driver gets all assigned deliveries with product info, address, delivery date, and customer note"
+          }
+        },
+        {
+          "name": "Get My Deliveries - By Date",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/order/my-deliveries?date=2026-01-20",
+              "host": ["{{baseUrl}}"],
+              "path": ["order", "my-deliveries"],
+              "query": [
+                {
+                  "key": "date",
+                  "value": "2026-01-20"
+                }
+              ]
+            },
+            "description": "Driver gets deliveries for a specific date"
+          }
+        },
+        {
+          "name": "Get My Deliveries - Pending",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/order/my-deliveries?status=Pending",
+              "host": ["{{baseUrl}}"],
+              "path": ["order", "my-deliveries"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "Pending"
+                }
+              ]
+            },
+            "description": "Driver gets pending deliveries (assigned but not started)"
+          }
+        },
+        {
+          "name": "Get My Deliveries - On My Way",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/order/my-deliveries?status=On My Way",
+              "host": ["{{baseUrl}}"],
+              "path": ["order", "my-deliveries"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "On My Way"
+                }
+              ]
+            },
+            "description": "Driver gets deliveries that are currently in progress"
+          }
+        },
+        {
+          "name": "Get My Deliveries - Delivered",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/order/my-deliveries?status=Delivered",
+              "host": ["{{baseUrl}}"],
+              "path": ["order", "my-deliveries"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "Delivered"
+                }
+              ]
+            },
+            "description": "Driver gets completed deliveries"
+          }
+        },
+        {
+          "name": "Update Status - On My Way",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"orderId\": \"ORDER_ID_HERE\",\n    \"status\": \"On My Way\",\n    \"notes\": \"Starting delivery now\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/order/update-delivery-status",
+              "host": ["{{baseUrl}}"],
+              "path": ["order", "update-delivery-status"]
+            },
+            "description": "Driver updates status to 'On My Way' when starting the delivery"
+          }
+        },
+        {
+          "name": "Update Status - Delivered",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"orderId\": \"ORDER_ID_HERE\",\n    \"status\": \"Delivered\",\n    \"notes\": \"Delivered to customer at front door\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/order/update-delivery-status",
+              "host": ["{{baseUrl}}"],
+              "path": ["order", "update-delivery-status"]
+            },
+            "description": "Driver updates status to 'Delivered' when delivery is complete"
+          }
+        },
+        {
+          "name": "Update My Availability",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"isAvailable\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/order/update-availability",
+              "host": ["{{baseUrl}}"],
+              "path": ["order", "update-availability"]
+            },
+            "description": "Driver updates their availability status"
+          }
+        },
+        {
+          "name": "Get My Delivery Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/order/driver-stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["order", "driver-stats"]
+            },
+            "description": "Driver gets their own delivery statistics: total, completed, pending, on my way, today's deliveries, completion rate"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Order - Sales Stats (Admin)",
+      "item": [
+        {
+          "name": "Get Total Sales",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/order/total-sales",
+              "host": ["{{baseUrl}}"],
+              "path": ["order", "total-sales"]
+            },
+            "description": "Admin gets total sales statistics"
+          }
+        },
+        {
+          "name": "Get Weekly Sales Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/order/weekly-sales-stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["order", "weekly-sales-stats"]
+            },
+            "description": "Admin gets weekly sales statistics"
+          }
+        },
+        {
+          "name": "Get Monthly Sales Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/order/monthly-sales-stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["order", "monthly-sales-stats"]
+            },
+            "description": "Admin gets monthly sales statistics"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reviews",
+      "item": [
+        {
+          "name": "Create Review",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"product_id_here\",\n  \"rating\": 5,\n  \"title\": \"Excellent product!\",\n  \"comment\": \"This product exceeded my expectations. Great quality and fast delivery.\",\n  \"images\": []\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/review/create",
+              "host": ["{{baseUrl}}"],
+              "path": ["review", "create"]
+            },
+            "description": "Create a review for a purchased product. User must have purchased the product to leave a review."
+          }
+        },
+        {
+          "name": "Get Product Reviews",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/review/product/product_id_here?page=1&limit=10&sortBy=createdAt",
+              "host": ["{{baseUrl}}"],
+              "path": ["review", "product", "product_id_here"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "createdAt"
+                }
+              ]
+            },
+            "description": "Get all reviews for a specific product with pagination. Returns reviews, average rating, and total review count."
+          }
+        },
+        {
+          "name": "Get My Reviews",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/review/user/my-reviews",
+              "host": ["{{baseUrl}}"],
+              "path": ["review", "user", "my-reviews"]
+            },
+            "description": "Get all reviews created by the authenticated user."
+          }
+        },
+        {
+          "name": "Update Review",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rating\": 4,\n  \"title\": \"Good product\",\n  \"comment\": \"Good quality, delivery was a bit slow\",\n  \"images\": []\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/review/update/review_id_here",
+              "host": ["{{baseUrl}}"],
+              "path": ["review", "update", "review_id_here"]
+            },
+            "description": "Update your own review. Only the review owner can update their review."
+          }
+        },
+        {
+          "name": "Delete Review",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/review/delete/review_id_here",
+              "host": ["{{baseUrl}}"],
+              "path": ["review", "delete", "review_id_here"]
+            },
+            "description": "Delete your own review. Only the review owner can delete their review."
+          }
+        },
+        {
+          "name": "Mark Review as Helpful",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"helpful\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/review/helpful/review_id_here",
+              "host": ["{{baseUrl}}"],
+              "path": ["review", "helpful", "review_id_here"]
+            },
+            "description": "Mark a review as helpful (helpful: true) or unhelpful (helpful: false). Anyone can vote."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Favorites",
+      "item": [
+        {
+          "name": "Add to Favorites",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"product_id_here\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/favorite/add",
+              "host": ["{{baseUrl}}"],
+              "path": ["favorite", "add"]
+            },
+            "description": "Add a product to your favorites. Cannot add same product twice."
+          }
+        },
+        {
+          "name": "Remove from Favorites",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"product_id_here\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/favorite/remove",
+              "host": ["{{baseUrl}}"],
+              "path": ["favorite", "remove"]
+            },
+            "description": "Remove a product from your favorites."
+          }
+        },
+        {
+          "name": "Get My Favorites",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/favorite/my-favorites?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["favorite", "my-favorites"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Get all products in your favorites list with pagination."
+          }
+        },
+        {
+          "name": "Check if Product is Favorite",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/favorite/check/product_id_here",
+              "host": ["{{baseUrl}}"],
+              "path": ["favorite", "check", "product_id_here"]
+            },
+            "description": "Check if a specific product is in your favorites. Returns { isFavorite: true/false }."
+          }
+        },
+        {
+          "name": "Get Product Favorite Count",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/favorite/count/product_id_here",
+              "host": ["{{baseUrl}}"],
+              "path": ["favorite", "count", "product_id_here"]
+            },
+            "description": "Get total number of times a product has been favorited by all users."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Payment / Stripe",
+      "item": [
+        {
+          "name": "Create Payment Intent",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"addressId\": \"address_id_here\",\n  \"deliveryCharges\": 50\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/payment/create-intent",
+              "host": ["{{baseUrl}}"],
+              "path": ["payment", "create-intent"]
+            },
+            "description": "Create a Stripe payment intent to get clientSecret for frontend payment processing. This step is optional if using direct payment processing."
+          }
+        },
+        {
+          "name": "Process Payment & Create Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"addressId\": \"address_id_here\",\n  \"deliveryCharges\": 50,\n  \"scheduledDeliveryDate\": \"2026-01-26\",\n  \"customerNote\": \"Please ring the bell twice\",\n  \"paymentMethodId\": \"pm_card_visa\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/payment/process",
+              "host": ["{{baseUrl}}"],
+              "path": ["payment", "process"]
+            },
+            "description": "Process payment with Stripe and create order if payment succeeds. Returns order with full product information including name, price, images, category, and description. Order is ONLY created after successful payment."
+          }
+        },
+        {
+          "name": "Stripe Webhook",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "stripe-signature",
+                "value": "signature_from_stripe",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"evt_...\",\n  \"object\": \"event\",\n  \"type\": \"payment_intent.succeeded\",\n  \"data\": {\n    \"object\": {\n      \"id\": \"pi_...\",\n      \"status\": \"succeeded\"\n    }\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/payment/webhook",
+              "host": ["{{baseUrl}}"],
+              "path": ["payment", "webhook"]
+            },
+            "description": "Webhook endpoint for Stripe events. Handles payment_intent.succeeded, payment_intent.payment_failed, and charge.refunded events."
+          }
+        }
+      ]
+    }
+  ]
+}
