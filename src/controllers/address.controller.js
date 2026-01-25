@@ -1,3 +1,18 @@
+export const getAddress = asyncHandler(async (req, res) => {
+  try {
+    const userId = req.user?._id;
+    const address = await Address.findOne({ userId });
+    if (!address) {
+      return res.status(404).json(new apiResponse(404, 'Address not found'));
+    }
+    return res
+      .status(200)
+      .json(new apiResponse(200, 'Address fetched successfully', address));
+  } catch (error) {
+    console.log('Error in get address: ', error);
+    throw new apiError(500, 'Internal Server Error', false, error.message);
+  }
+});
 import { Address } from '../models/address.model.js';
 import { User } from '../models/user.model.js';
 import { apiError } from '../utils/apiError.js';
