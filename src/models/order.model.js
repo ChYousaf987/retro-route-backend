@@ -38,6 +38,10 @@ const orderSchema = new mongoose.Schema(
       enum: ['Pending', 'Completed', 'Failed'],
       default: 'Pending',
     },
+    stripePaymentIntentId: {
+      type: String,
+      default: null,
+    },
     deliveryAddress: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Address',

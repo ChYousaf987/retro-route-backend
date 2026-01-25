@@ -1738,6 +1738,95 @@
       "name": "Payment / Stripe",
       "item": [
         {
+          "name": "Create Order - Multiple Products (Cart)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"products\": [\n    {\n      \"productId\": \"65abc123def456789ghijkl0\",\n      \"quantity\": 2\n    },\n    {\n      \"productId\": \"65xyz789abc123def456ghi0\",\n      \"quantity\": 1\n    }\n  ],\n  \"notes\": \"Please ring bell twice\",\n  \"addressId\": \"65address123def456ghi789\",\n  \"totalPrice\": 99.99,\n  \"deliveryCharges\": 5.00,\n  \"scheduledDeliveryDate\": \"2026-01-28T00:00:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/payment/create-order",
+              "host": ["{{baseUrl}}"],
+              "path": ["payment", "create-order"]
+            },
+            "description": "Create order with MULTIPLE products from cart. Pass products array with multiple items. Order created in PENDING status. Webhook auto-updates to Completed/Failed on payment result."
+          },
+          "response": [
+            {
+              "name": "Success - 201",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer token",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"products\": [{\"productId\": \"id1\", \"quantity\": 2}]}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/payment/create-order",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["payment", "create-order"]
+                }
+              },
+              "code": 201,
+              "body": "{\n  \"statusCode\": 201,\n  \"data\": {\n    \"orderId\": \"65abc456def789ghijkl123m\",\n    \"stripePaymentIntentId\": \"pi_1KxJz2I9VfYXvNbV8xKzV1L0\",\n    \"clientSecret\": \"pi_1KxJz2I9VfYXvNbV8xKzV1L0_secret_k5zKnZqL7mKp8nPqR2sT1uV\",\n    \"amount\": 99.99,\n    \"currency\": \"usd\"\n  },\n  \"message\": \"Order created. Complete payment on mobile Stripe sheet.\"\n}\n"
+            }
+          ]
+        },
+        {
+          "name": "Create Order - Single Product",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"65abc123def456789ghijkl0\",\n  \"quantity\": 2,\n  \"notes\": \"Please ring bell twice\",\n  \"addressId\": \"65address123def456ghi789\",\n  \"totalPrice\": 49.99,\n  \"deliveryCharges\": 5.00,\n  \"scheduledDeliveryDate\": \"2026-01-28T00:00:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/payment/create-order",
+              "host": ["{{baseUrl}}"],
+              "path": ["payment", "create-order"]
+            },
+            "description": "Create order with SINGLE product (backward compatible). Pass productId + quantity instead of products array. Order created in PENDING status. Webhook auto-updates to Completed/Failed on payment result."
+          },
+          "response": [
+            {
+              "name": "Success - 201",
+              "code": 201,
+              "body": "{\n  \"statusCode\": 201,\n  \"data\": {\n    \"orderId\": \"65abc456def789ghijkl123m\",\n    \"stripePaymentIntentId\": \"pi_1KxJz2I9VfYXvNbV8xKzV1L0\",\n    \"clientSecret\": \"pi_1KxJz2I9VfYXvNbV8xKzV1L0_secret_k5zKnZqL7mKp8nPqR2sT1uV\",\n    \"amount\": 49.99,\n    \"currency\": \"usd\"\n  },\n  \"message\": \"Order created. Complete payment on mobile Stripe sheet.\"\n}\n"
+            }
+          ]
+        },
+        {
           "name": "Create Payment Intent",
           "request": {
             "method": "POST",
@@ -1794,7 +1883,7 @@
           }
         },
         {
-          "name": "Stripe Webhook",
+          "name": "Stripe Webhook - Payment Succeeded",
           "request": {
             "method": "POST",
             "header": [
@@ -1811,14 +1900,42 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"id\": \"evt_...\",\n  \"object\": \"event\",\n  \"type\": \"payment_intent.succeeded\",\n  \"data\": {\n    \"object\": {\n      \"id\": \"pi_...\",\n      \"status\": \"succeeded\"\n    }\n  }\n}"
+              "raw": "{\n  \"id\": \"evt_1KxJz2I9VfYXvNbV8xKzV1L0\",\n  \"object\": \"event\",\n  \"type\": \"payment_intent.succeeded\",\n  \"data\": {\n    \"object\": {\n      \"id\": \"pi_1KxJz2I9VfYXvNbV8xKzV1L0\",\n      \"status\": \"succeeded\",\n      \"amount\": 9999,\n      \"currency\": \"usd\"\n    }\n  }\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/payment/webhook",
               "host": ["{{baseUrl}}"],
               "path": ["payment", "webhook"]
             },
-            "description": "Webhook endpoint for Stripe events. Handles payment_intent.succeeded, payment_intent.payment_failed, and charge.refunded events."
+            "description": "Webhook from Stripe when payment succeeds. Backend finds order by stripePaymentIntentId and updates paymentStatus to 'Completed'. Stripe signature verified for security."
+          }
+        },
+        {
+          "name": "Stripe Webhook - Payment Failed",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "stripe-signature",
+                "value": "signature_from_stripe",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"evt_1KxJz2I9VfYXvNbV8xKzV1L0\",\n  \"object\": \"event\",\n  \"type\": \"payment_intent.payment_failed\",\n  \"data\": {\n    \"object\": {\n      \"id\": \"pi_1KxJz2I9VfYXvNbV8xKzV1L0\",\n      \"status\": \"requires_payment_method\",\n      \"last_payment_error\": {\n        \"message\": \"Your card was declined\"\n      }\n    }\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/payment/webhook",
+              "host": ["{{baseUrl}}"],
+              "path": ["payment", "webhook"]
+            },
+            "description": "Webhook from Stripe when payment fails. Backend finds order by stripePaymentIntentId and updates paymentStatus to 'Failed'. Order remains in database for user to retry."
           }
         }
       ]
