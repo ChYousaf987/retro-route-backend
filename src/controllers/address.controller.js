@@ -10,10 +10,6 @@ export const addAddress = asyncHandler(async (req, res) => {
     const { fullName, addressLine, city, state, pinCode, country, mobile } = req.body;
     const userId = req.user?._id;
 
-    if (!userId) {
-        throw new apiError(401, "Unauthorized - user not found");
-    }
-
     const address = await Address.create({
         userId,
         fullName,
@@ -25,7 +21,6 @@ export const addAddress = asyncHandler(async (req, res) => {
         mobile,
     });
 
-    // Add address reference to user
     await User.findByIdAndUpdate(
         userId,
         { $push: { addressDetails: address._id } },
