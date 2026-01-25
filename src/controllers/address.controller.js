@@ -7,9 +7,12 @@ import { apiResponse } from '../utils/apiResponse.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 
 export const addAddress = asyncHandler(async (req, res) => {
-  const { fullName, addressLine, city, state, pinCode, country, mobile } =
-    req.body;
+  const { fullName, addressLine, city, state, pinCode, country, mobile } = req.body;
   const userId = req.user?._id;
+
+  if (!userId) {
+    throw new apiError(401, "User not authenticated");
+  }
 
   const address = await Address.create({
     userId,
@@ -22,6 +25,7 @@ export const addAddress = asyncHandler(async (req, res) => {
     mobile,
   });
 
+  // Add address reference to user
   await User.findByIdAndUpdate(
     userId,
     { $push: { addressDetails: address._id } },
@@ -30,61 +34,66 @@ export const addAddress = asyncHandler(async (req, res) => {
 
   return res
     .status(201)
-    .json(new apiResponse(201, 'Address added successfully', address));
+    .json(new apiResponse(201, "Address added successfully", address));
 });
 
-export const getAddress = asyncHandler(async (req, res) => {
+export const getAddresses = asyncHandler(async (req, res) => {
   const userId = req.user?._id;
 
   if (!userId) {
-    throw new apiError(401, 'Unauthorized - user not found');
+    throw new apiError(401, "User not authenticated");
+  }
+
+  const addresses = await Address.find({ userId }).lean();
+
+  return res
+    .status(200)
+    .json(new apiResponse(200, "Addresses fetched successfully", addresses));
+});
+
+export const updateAddress = asyncHandler(async (req, res) => {
+  const { fullName, addressLine, city, state, pinCode, country, mobile } = req.body;
+  const userId = req.user?._id;
+
+  if (!userId) {
+    throw new apiError(401, "User not authenticated");
   }
 
   const address = await Address.findOne({ userId });
 
   if (!address) {
-    return res.status(404).json(new apiResponse(404, 'No address found'));
+    throw new apiError(404, "No address found for this user");
   }
+
+  // Update only provided fields
+  if (fullName !== undefined) address.fullName = fullName;
+  if (addressLine !== undefined) address.addressLine = addressLine;
+  if (city !== undefined) address.city = city;
+  if (state !== undefined) address.state = state;
+  if (pinCode !== undefined) address.pinCode = pinCode;
+  if (country !== undefined) address.country = country;
+  if (mobile !== undefined) address.mobile = mobile;
+
+  await address.save();
 
   return res
     .status(200)
-    .json(new apiResponse(200, 'Address fetched successfully', address));
-});
-
-export const updateAddress = asyncHandler(async (req, res) => {
-  const { fullName, addressLine, city, state, pinCode, country, mobile } =
-    req.body;
-  const userId = req.user?._id;
-
-  const address = await Address.findOne({ userId });
-
-  if (address) {
-    if (fullName !== undefined) address.fullName = fullName;
-    if (addressLine !== undefined) address.addressLine = addressLine;
-    if (city !== undefined) address.city = city;
-    if (state !== undefined) address.state = state;
-    if (pinCode !== undefined) address.pinCode = pinCode;
-    if (country !== undefined) address.country = country;
-    if (mobile !== undefined) address.mobile = mobile;
-    await address.save();
-  }
-
-  return res
-    .status(200)
-    .json(new apiResponse(200, 'Address updated successfully', address));
+    .json(new apiResponse(200, "Address updated successfully", address));
 });
 
 export const deleteAddress = asyncHandler(async (req, res) => {
   const userId = req.user?._id;
 
   if (!userId) {
-    throw new apiError(401, 'Unauthorized - user not found');
+    throw new apiError(401, "User not authenticated");
   }
 
   const address = await Address.findOne({ userId });
 
   if (!address) {
-    return res.status(404).json(new apiResponse(404, 'No address to delete'));
+    return res
+      .status(404)
+      .json(new apiResponse(404, "No address found to delete"));
   }
 
   // Remove reference from User
@@ -94,10 +103,10 @@ export const deleteAddress = asyncHandler(async (req, res) => {
     { new: true }
   );
 
-  // Delete the address document
+  // Delete the address
   await Address.findByIdAndDelete(address._id);
 
   return res
     .status(200)
-    .json(new apiResponse(200, 'Address deleted successfully'));
+    .json(new apiResponse(200, "Address deleted successfully"));
 });

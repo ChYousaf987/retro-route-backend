@@ -1,18 +1,26 @@
+// address.routes.js  (recommended style)
+
 import { Router } from 'express';
 import {
   addAddress,
-  deleteAddress,
+  getAddresses,       // ← plural — gets all addresses of the user
   updateAddress,
-  getAddress,
+  deleteAddress,
 } from '../controllers/address.controller.js';
+
 import { authVerify } from '../middlewares/auth.middleware.js';
 
-const addressRouter = Router();
+const router = Router();
 
-addressRouter.route('/add-address').post(authVerify, addAddress);
-addressRouter.route('/update-address').put(authVerify, updateAddress);
-addressRouter.route('/delete-address').delete(authVerify, deleteAddress);
+// Collection routes
+router.route('/addresses')
+  .post(authVerify, addAddress)       // POST   /addresses       → create
+  .get(authVerify, getAddresses);     // GET    /addresses       → list all
 
-addressRouter.route('/get-address').get(authVerify, getAddress);
+// Individual resource routes
+// (You'll need to modify controller to accept :id param if you want true per-address update/delete)
+router.route('/addresses/:addressId')
+  .patch(authVerify, updateAddress)   // PATCH  /addresses/:id   → update one
+  .delete(authVerify, deleteAddress); // DELETE /addresses/:id   → delete one
 
-export { addressRouter };
+export { router as addressRouter };
