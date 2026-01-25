@@ -1,3 +1,4 @@
+import Stripe from 'stripe';
 import { Cart } from '../models/cart.model.js';
 import { Order } from '../models/order.model.js';
 import { User } from '../models/user.model.js';
@@ -15,6 +16,27 @@ import {
   endOfMonth,
 } from 'date-fns';
 
+// Lazy-load Stripe instance to ensure environment variables are loaded
+const getStripeInstance = () => {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    throw new Error(
+      'STRIPE_SECRET_KEY is not defined in environment variables'
+    );
+  }
+  return new Stripe(process.env.STRIPE_SECRET_KEY);
+};
+
+/**
+ * UNIFIED CREATE ORDER API
+ * Handles: Order Creation + Payment Processing + Payment Status Checking
+ *
+ * This endpoint:
+ * 1. Validates user cart/products and delivery details
+ * 2. Creates order with PENDING status
+ * 3. Creates Stripe Payment Intent
+ * 4. Returns clientSecret for frontend payment completion
+ * 5. Webhook handles payment success/failure and updates order status
+ */
 export const createOrder = asyncHandler(async (req, res) => {
   try {
     const userId = req.user?._id;
@@ -25,6 +47,7 @@ export const createOrder = asyncHandler(async (req, res) => {
       customerNote = '',
     } = req.body;
 
+    // ===== VALIDATION =====
     if (!addressId) {
       return res.status(400).json(new apiError(400, 'Address ID is required'));
     }
@@ -51,6 +74,7 @@ export const createOrder = asyncHandler(async (req, res) => {
         );
     }
 
+    // Get user's cart with populated products
     const cart = await Cart.findOne({ user: userId }).populate('items.product');
 
     if (!cart || cart.items.length === 0) {
@@ -59,6 +83,7 @@ export const createOrder = asyncHandler(async (req, res) => {
 
     let subtotal = 0;
 
+    // Prepare order items from cart
     const orderItems = cart.items.map(item => {
       const itemTotal = item.product.price * item.quantity;
       subtotal += itemTotal;
@@ -72,7 +97,15 @@ export const createOrder = asyncHandler(async (req, res) => {
 
     const total = subtotal + deliveryCharges;
 
+    // ===== STEP 1: CREATE ORDER IN DATABASE (PENDING STATUS) =====
     const randomId = `#${Math.floor(100000 + Math.random() * 900000)}`;
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json(new apiError(404, 'User not found'));
+    }
+
+    // Create order with Pending payment status
     const order = await Order.create({
       userId,
       orderId: randomId,
@@ -83,27 +116,232 @@ export const createOrder = asyncHandler(async (req, res) => {
       deliveryCharges,
       subtotal,
       total,
+      paymentStatus: 'Pending', // Initial status - waiting for payment
+      deliveryStatus: 'Pending',
     });
 
+    // Add order to user's order history
     await User.findByIdAndUpdate(
       userId,
       { $push: { orderHistory: order._id } },
       { new: true }
     );
 
-    const populateOrder = await Order.findById(order._id).populate(
-      'products.productId deliveryAddress'
+    // ===== STEP 2: CREATE STRIPE PAYMENT INTENT =====
+    const amountInCents = Math.round(total * 100); // Stripe uses cents
+    const stripe = getStripeInstance();
+
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: amountInCents,
+      currency: 'usd',
+      automatic_payment_methods: {
+        enabled: true,
+      },
+      metadata: {
+        userId: userId.toString(),
+        orderId: order._id.toString(),
+        orderNumber: randomId,
+        addressId: addressId.toString(),
+        totalAmount: total.toString(),
+      },
+      receipt_email: user.email,
+      description: `Order ${randomId} for ${user.email} - ${orderItems.length} item(s)`,
+    });
+
+    // ===== STEP 3: SAVE STRIPE PAYMENT INTENT ID TO ORDER =====
+    order.stripePaymentIntentId = paymentIntent.id;
+    await order.save();
+
+    // ===== STEP 4: RETURN PAYMENT INTENT TO FRONTEND =====
+    // Frontend will use clientSecret to complete payment via Stripe Payment Sheet
+    return res.status(201).json(
+      new apiResponse(201, 'Order created. Complete payment to confirm.', {
+        orderId: order._id,
+        orderNumber: randomId,
+        stripePaymentIntentId: paymentIntent.id,
+        clientSecret: paymentIntent.client_secret, // Frontend uses this for payment
+        paymentAmount: total,
+        paymentCurrency: paymentIntent.currency.toUpperCase(),
+        paymentStatus: 'Pending', // Waiting for payment
+        deliveryAddress: order.deliveryAddress,
+        scheduledDeliveryDate: order.scheduledDeliveryDate,
+        items: orderItems.length,
+        subtotal,
+        deliveryCharges,
+        total,
+        message:
+          'Payment is pending. Use the clientSecret to complete payment on the mobile app.',
+      })
     );
-
-    cart.items = [];
-    await cart.save();
-
-    res
-      .status(201)
-      .json(new apiResponse(201, 'Order placed successfully', populateOrder));
   } catch (error) {
     console.log('Error in create order: ', error);
     throw new apiError(500, 'Internal Server Error', false, error.message);
+  }
+});
+
+/**
+ * CHECK ORDER PAYMENT STATUS
+ * Allows frontend to check if payment is successful or not
+ *
+ * Returns: Payment status and order details
+ */
+export const checkPaymentStatus = asyncHandler(async (req, res) => {
+  try {
+    const { orderId } = req.body;
+
+    if (!orderId) {
+      return res.status(400).json(new apiError(400, 'Order ID is required'));
+    }
+
+    // Fetch order from database
+    const order = await Order.findById(orderId).populate(
+      'products.productId deliveryAddress'
+    );
+
+    if (!order) {
+      return res.status(404).json(new apiError(404, 'Order not found'));
+    }
+
+    // Verify user owns this order
+    if (order.userId.toString() !== req.user._id.toString()) {
+      return res.status(403).json(new apiError(403, 'Unauthorized access'));
+    }
+
+    // If payment is already completed, return success
+    if (order.paymentStatus === 'Completed') {
+      // Clear user's cart since payment is successful
+      await Cart.findOneAndUpdate({ user: req.user._id }, { items: [] });
+
+      return res.status(200).json(
+        new apiResponse(200, 'Payment successful! Order confirmed.', {
+          orderId: order._id,
+          orderNumber: order.orderId,
+          paymentStatus: 'Completed',
+          deliveryStatus: order.deliveryStatus,
+          orderDetails: {
+            items: order.products.length,
+            subtotal: order.subtotal,
+            deliveryCharges: order.deliveryCharges,
+            total: order.total,
+            scheduledDeliveryDate: order.scheduledDeliveryDate,
+            customerNote: order.customerNote,
+          },
+          order,
+        })
+      );
+    }
+
+    // If payment is still pending, check with Stripe
+    if (order.paymentStatus === 'Pending' && order.stripePaymentIntentId) {
+      try {
+        const stripe = getStripeInstance();
+        const paymentIntent = await stripe.paymentIntents.retrieve(
+          order.stripePaymentIntentId
+        );
+
+        // Check current payment status from Stripe
+        if (paymentIntent.status === 'succeeded') {
+          // Payment succeeded, update order status
+          order.paymentStatus = 'Completed';
+          await order.save();
+
+          // Clear user's cart
+          await Cart.findOneAndUpdate({ user: req.user._id }, { items: [] });
+
+          return res.status(200).json(
+            new apiResponse(200, 'Payment successful! Order confirmed.', {
+              orderId: order._id,
+              orderNumber: order.orderId,
+              paymentStatus: 'Completed',
+              deliveryStatus: order.deliveryStatus,
+              orderDetails: {
+                items: order.products.length,
+                subtotal: order.subtotal,
+                deliveryCharges: order.deliveryCharges,
+                total: order.total,
+                scheduledDeliveryDate: order.scheduledDeliveryDate,
+                customerNote: order.customerNote,
+              },
+              order,
+            })
+          );
+        } else if (paymentIntent.status === 'processing') {
+          return res.status(202).json(
+            new apiResponse(202, 'Payment is still being processed', {
+              orderId: order._id,
+              orderNumber: order.orderId,
+              paymentStatus: 'Processing',
+              message: 'Your payment is being processed. Please wait.',
+            })
+          );
+        } else if (paymentIntent.status === 'requires_payment_method') {
+          return res.status(400).json(
+            new apiError(400, 'Payment method failed. Please try again.', {
+              orderId: order._id,
+              paymentStatus: 'Failed',
+            })
+          );
+        } else if (paymentIntent.status === 'canceled') {
+          order.paymentStatus = 'Failed';
+          await order.save();
+
+          return res.status(400).json(
+            new apiError(400, 'Payment was canceled', {
+              orderId: order._id,
+              paymentStatus: 'Failed',
+            })
+          );
+        } else {
+          return res.status(400).json(
+            new apiError(400, `Payment status: ${paymentIntent.status}`, {
+              orderId: order._id,
+              paymentStatus: paymentIntent.status,
+            })
+          );
+        }
+      } catch (stripeError) {
+        console.log('Error checking Stripe payment intent:', stripeError);
+        return res
+          .status(500)
+          .json(
+            new apiError(
+              500,
+              'Error checking payment status',
+              false,
+              stripeError.message
+            )
+          );
+      }
+    }
+
+    // If payment failed
+    if (order.paymentStatus === 'Failed') {
+      return res.status(400).json(
+        new apiError(400, 'Payment failed. Please try again.', {
+          orderId: order._id,
+          orderNumber: order.orderId,
+          paymentStatus: 'Failed',
+        })
+      );
+    }
+
+    // Default response
+    return res.status(200).json(
+      new apiResponse(200, 'Order payment status retrieved', {
+        orderId: order._id,
+        orderNumber: order.orderId,
+        paymentStatus: order.paymentStatus,
+        deliveryStatus: order.deliveryStatus,
+      })
+    );
+  } catch (error) {
+    console.log('Error checking payment status: ', error);
+    throw new apiError(
+      500,
+      'Error checking payment status',
+      false,
+      error.message
+    );
   }
 });
 

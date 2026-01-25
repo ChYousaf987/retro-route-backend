@@ -1,0 +1,171 @@
+{
+  "info": {
+    "name": "Unified Order API - Complete Workflow",
+    "description": "Unified API for creating orders with integrated Stripe payment processing and payment status checking. This API combines order creation, payment initialization, and status tracking in a single workflow.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "🚀 SETUP - Read First",
+      "item": [
+        {
+          "name": "Setup Instructions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://postman.com",
+              "protocol": "https",
+              "host": ["postman.com"]
+            },
+            "description": "UNIFIED ORDER API SETUP:\n\n1. REPLACE THESE PLACEHOLDERS:\n   - {{base_url}} = http://localhost:5000\n   - {{auth_token}} = Your JWT token from login\n   - {{address_id}} = Valid user address MongoDB ID\n\n2. GET YOUR TOKEN:\n   - Call your login endpoint\n   - Copy the JWT token\n   - Add to Postman collection variable: auth_token\n\n3. GET YOUR ADDRESS ID:\n   - Call GET /api/v1/address/get-addresses (if exists)\n   - OR use any valid MongoDB ObjectId from your user's addresses\n   - Add to Postman collection variable: address_id\n\n4. SET BASE URL:\n   - Collection → Variables → base_url\n   - Set to: http://localhost:5000\n   - (Change to production URL when deploying)\n\n5. ENSURE CART HAS ITEMS:\n   - Add products to cart before creating order\n   - Use POST /api/v1/cart/add-to-cart endpoint\n   - Order creation will fail if cart is empty\n\n6. STRIPE TEST CARDS:\n   - Success: 4242 4242 4242 4242\n   - Decline: 4000 0025 0000 3155\n   - Expiry: Any future date (e.g., 12/25)\n   - CVC: Any 3 digits (e.g., 123)\n\n7. WORKFLOW:\n   Step 1: Create Order (gets clientSecret)\n   Step 2: Complete Payment (on mobile/frontend)\n   Step 3: Check Payment Status (verify success)\n   Step 4: Get All Orders (view order history)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "1️⃣ Create Order (Unified)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{auth_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/order/create-order",
+          "protocol": "{{protocol}}",
+          "host": ["{{host}}"],
+          "port": "{{port}}",
+          "path": ["api", "v1", "order", "create-order"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"addressId\": \"{{address_id}}\",\n  \"scheduledDeliveryDate\": \"2026-02-20\",\n  \"deliveryCharges\": 5.00,\n  \"customerNote\": \"Please ring the doorbell twice\"\n}"
+        },
+        "description": "UNIFIED CREATE ORDER API\n\nCreates an order from user's cart AND initializes Stripe payment in ONE call.\n\nWHAT HAPPENS:\n1. Validates cart has items\n2. Validates delivery date is in future\n3. Creates order in database (status: Pending)\n4. Creates Stripe PaymentIntent\n5. Returns clientSecret for payment\n\nREQUIRED:\n- auth_token (JWT from login)\n- address_id (valid address MongoDB ID)\n- Cart must have items\n\nREQUEST BODY:\n{\n  \"addressId\": \"65a4c8d9e4b0a1f2c3d4e5f6\",\n  \"scheduledDeliveryDate\": \"2026-02-20\",\n  \"deliveryCharges\": 5.00,\n  \"customerNote\": \"Optional delivery instructions\"\n}\n\nRESPONSE (201 Success):\n{\n  \"statusCode\": 201,\n  \"message\": \"Order created. Complete payment to confirm.\",\n  \"data\": {\n    \"orderId\": \"65a4c8d9e4b0a1f2c3d4e5f7\",\n    \"orderNumber\": \"#854723\",\n    \"clientSecret\": \"pi_1ABC2345_secret_XYZ\",\n    \"paymentAmount\": 75.50,\n    \"paymentStatus\": \"Pending\",\n    \"stripePaymentIntentId\": \"pi_1ABC2345\"\n  }\n}\n\nUSE THIS FOR:\n1. Get orderId → Use in check-payment-status\n2. Get clientSecret → Use in Stripe Payment Sheet on frontend\n3. Display orderNumber to user\n4. Show paymentAmount for confirmation\n\nERROR RESPONSES:\n- 400: Cart is empty / Address ID required / Invalid delivery date\n- 404: User not found\n- 500: Internal server error"
+      },
+      "response": []
+    },
+    {
+      "name": "2️⃣ Check Payment Status",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{auth_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/order/check-payment-status",
+          "protocol": "{{protocol}}",
+          "host": ["{{host}}"],
+          "port": "{{port}}",
+          "path": ["api", "v1", "order", "check-payment-status"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"orderId\": \"PASTE_ORDER_ID_FROM_STEP_1_HERE\"\n}"
+        },
+        "description": "CHECK PAYMENT STATUS\n\nVerifies if payment was successful or failed.\n\nWHAT HAPPENS:\n1. Finds order by orderId\n2. Checks paymentStatus in database\n3. If still Pending, queries Stripe for latest status\n4. Returns current payment state\n5. Auto-clears cart if Completed\n\nWHEN TO USE:\n1. After user completes payment on Stripe Payment Sheet\n2. Poll every 2-3 seconds if status is \"Processing\"\n3. Keep checking until \"Completed\" or \"Failed\"\n\nREQUIREST BODY:\n{\n  \"orderId\": \"65a4c8d9e4b0a1f2c3d4e5f7\"\n}\n\nRESPONSE (200 Success - Payment Completed):\n{\n  \"statusCode\": 200,\n  \"message\": \"Payment successful! Order confirmed.\",\n  \"data\": {\n    \"orderId\": \"65a4c8d9e4b0a1f2c3d4e5f7\",\n    \"orderNumber\": \"#854723\",\n    \"paymentStatus\": \"Completed\",\n    \"deliveryStatus\": \"Pending\",\n    \"orderDetails\": {\n      \"items\": 3,\n      \"subtotal\": 70.50,\n      \"deliveryCharges\": 5.00,\n      \"total\": 75.50\n    },\n    \"order\": { /* full order object */ }\n  }\n}\n\nRESPONSE (202 Processing):\n{\n  \"statusCode\": 202,\n  \"message\": \"Payment is still being processed\",\n  \"data\": {\n    \"paymentStatus\": \"Processing\"\n  }\n}\n\nRESPONSE (400 Failed - Payment Declined):\n{\n  \"statusCode\": 400,\n  \"message\": \"Payment failed. Please try again.\",\n  \"data\": {\n    \"paymentStatus\": \"Failed\"\n  }\n}\n\nPAYMENT STATUS VALUES:\n- \"Pending\" = Order created, awaiting payment\n- \"Completed\" = Payment successful ✅\n- \"Failed\" = Payment declined ❌\n- \"Processing\" = Still being processed ⏳\n\nERROR RESPONSES:\n- 400: Order ID is required\n- 403: Unauthorized access (user doesn't own order)\n- 404: Order not found\n- 500: Stripe API error"
+      },
+      "response": []
+    },
+    {
+      "name": "3️⃣ Get All Orders",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{auth_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/order/get-all-orders",
+          "protocol": "{{protocol}}",
+          "host": ["{{host}}"],
+          "port": "{{port}}",
+          "path": ["api", "v1", "order", "get-all-orders"]
+        },
+        "description": "GET ALL ORDERS\n\nRetrieves all orders for the authenticated user with complete details.\n\nWHAT RETURNS:\n- All user's orders\n- Payment status for each order\n- Delivery status for each order\n- Product details\n- Delivery addresses\n- Order totals\n\nRESPONSE (200 Success):\n{\n  \"statusCode\": 200,\n  \"message\": \"Orders fetched successfully\",\n  \"data\": [\n    {\n      \"_id\": \"65a4c8d9e4b0a1f2c3d4e5f7\",\n      \"orderId\": \"#854723\",\n      \"userId\": \"65a4c8d9e4b0a1f2c3d4e5f0\",\n      \"products\": [\n        {\n          \"productId\": { /* product details */ },\n          \"quantity\": 3,\n          \"priceAtPurchase\": 10.00\n        }\n      ],\n      \"paymentStatus\": \"Completed\",\n      \"deliveryStatus\": \"Pending\",\n      \"deliveryAddress\": { /* address details */ },\n      \"total\": 75.50,\n      \"subtotal\": 70.50,\n      \"deliveryCharges\": 5.00,\n      \"scheduledDeliveryDate\": \"2026-02-20T00:00:00.000Z\",\n      \"customerNote\": \"Please ring doorbell\",\n      \"createdAt\": \"2026-01-25T10:30:00.000Z\",\n      \"updatedAt\": \"2026-01-25T10:35:00.000Z\"\n    },\n    { /* more orders */ }\n  ]\n}\n\nUSE FOR:\n- Display user's order history\n- Show current status of each order\n- Track payment status per order\n- Monitor delivery progress"
+      },
+      "response": []
+    },
+    {
+      "name": "📋 REFERENCE - Error Codes",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "https://example.com",
+          "protocol": "https",
+          "host": ["example.com"]
+        },
+        "description": "ERROR CODES REFERENCE\n\n400 BAD REQUEST:\n- \"Address ID is required\" → Missing addressId\n- \"Scheduled delivery date is required\" → Missing date\n- \"Scheduled delivery date must be today or in the future\" → Date in past\n- \"Cart is empty\" → No items in cart\n- \"Order ID is required\" → Missing orderId in check-payment-status\n\n403 FORBIDDEN:\n- \"Unauthorized access\" → User trying to access someone else's order\n\n404 NOT FOUND:\n- \"User not found\" → User doesn't exist\n- \"Order not found\" → Order ID invalid\n\n500 INTERNAL SERVER ERROR:\n- \"Order creation failed\" → Stripe API error\n- \"Error checking payment status\" → Stripe API error\n\nHOW TO HANDLE:\n1. Check error message\n2. Verify request body is valid\n3. Ensure auth_token is correct\n4. Check addressId exists\n5. Verify orderId is correct\n6. For Stripe errors, check STRIPE_SECRET_KEY in .env"
+      }
+    },
+    {
+      "name": "📋 REFERENCE - Environment Setup",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "https://example.com",
+          "protocol": "https",
+          "host": ["example.com"]
+        },
+        "description": "ENVIRONMENT SETUP REQUIRED\n\n.env FILE:\nSTRIPE_SECRET_KEY=sk_test_... (or sk_live_...)\nSTRIPE_WEBHOOK_SECRET=whsec_...\nMONGO_URI=mongodb://...\nJWT_SECRET=your_secret_key\nPORT=5000\n\nGET STRIPE KEYS:\n1. Go to https://dashboard.stripe.com\n2. Login to your account\n3. Go to Developers → API Keys\n4. Copy Secret Key (starts with sk_)\n5. Add to .env as STRIPE_SECRET_KEY\n\nGET WEBHOOK SECRET:\n1. Go to Developers → Webhooks\n2. Add endpoint: https://yourdomain.com/api/v1/payment/webhook\n3. Select events:\n   - payment_intent.succeeded\n   - payment_intent.payment_failed\n   - payment_intent.canceled\n4. Copy signing secret\n5. Add to .env as STRIPE_WEBHOOK_SECRET\n\nNOTE: Webhook only works on public URL, not localhost\nFor local testing, use Stripe CLI:\n  stripe listen --forward-to localhost:5000/api/v1/payment/webhook"
+      }
+    },
+    {
+      "name": "📋 REFERENCE - Stripe Test Cards",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "https://example.com",
+          "protocol": "https",
+          "host": ["example.com"]
+        },
+        "description": "STRIPE TEST CARDS\n\nUSE THESE FOR TESTING (Development Only)\n\nSUCCESSFUL PAYMENT:\nCard Number: 4242 4242 4242 4242\nExpiry: 12/25 (any future month/year)\nCVC: 123 (any 3 digits)\nResult: ✅ Payment succeeds immediately\n\nDECLINED PAYMENT:\nCard Number: 4000 0025 0000 3155\nExpiry: 12/25\nCVC: 123\nResult: ❌ Payment declined\n\nANOTHER DECLINE:\nCard Number: 4000 0000 0000 0002\nExpiry: 12/25\nCVC: 123\nResult: ❌ Card declined\n\nHOW TO TEST:\n1. Create order (get clientSecret)\n2. Use Stripe Payment Sheet on frontend\n3. Enter test card above\n4. Complete payment\n5. Check payment status\n\nIMPORTANT:\n- These cards only work in test mode\n- Use live cards (real payment) only in production\n- Never commit real keys to git\n- Rotate keys regularly in production"
+      }
+    },
+    {
+      "name": "📋 REFERENCE - Frontend Flow",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "https://example.com",
+          "protocol": "https",
+          "host": ["example.com"]
+        },
+        "description": "FRONTEND IMPLEMENTATION FLOW\n\nSTEP 1: GET AUTH TOKEN\n- Call login endpoint\n- Save JWT token\n- Use in all API requests\n- Add to header: Authorization: Bearer <token>\n\nSTEP 2: GET ADDRESS ID\n- Load user's saved addresses\n- Let user select one\n- Get the MongoDB ObjectId\n\nSTEP 3: ADD ITEMS TO CART\n- Show products\n- Let user add to cart\n- Call: POST /api/v1/cart/add-to-cart\n- Get cart total\n\nSTEP 4: CREATE ORDER\n- Call: POST /api/v1/order/create-order\n- Send: addressId, scheduledDeliveryDate, deliveryCharges\n- Get: orderId, clientSecret, orderNumber\n\nSTEP 5: SHOW PAYMENT SHEET\n- Initialize Stripe with clientSecret\n- Show secure payment form\n- User enters card details\n- Stripe processes payment\n\nSTEP 6: CHECK PAYMENT STATUS\n- Call: POST /api/v1/order/check-payment-status\n- Send: orderId\n- Get: paymentStatus\n- If \"Processing\", retry in 2 seconds\n- If \"Completed\", show success ✅\n- If \"Failed\", show error ❌\n\nSTEP 7: SHOW CONFIRMATION\n- Display order number\n- Display total amount paid\n- Display estimated delivery date\n- Show \"Thank You\" message\n- Offer \"View Orders\" button\n\nSTEP 8: VIEW ORDER HISTORY\n- Call: GET /api/v1/order/get-all-orders\n- Display all user's orders\n- Show payment status (Completed/Failed/Pending)\n- Show delivery status\n- Allow filtering/sorting"
+      }
+    },
+    {
+      "name": "📋 REFERENCE - API Summary",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "https://example.com",
+          "protocol": "https",
+          "host": ["example.com"]
+        },
+        "description": "UNIFIED ORDER API SUMMARY\n\nWHAT IS IT:\n- Single API for order creation + payment initialization\n- Combines order creation and Stripe payment setup\n- Returns clientSecret for frontend payment\n- Webhook auto-updates order status\n- Simple status checking endpoint\n\nKEY ENDPOINTS:\n1. POST /api/v1/order/create-order\n   → Creates order + Stripe intent\n   → Returns: orderId, clientSecret, orderNumber\n\n2. POST /api/v1/order/check-payment-status\n   → Checks if payment succeeded\n   → Returns: paymentStatus, order details\n\n3. GET /api/v1/order/get-all-orders\n   → Gets user's order history\n   → Returns: All orders with status\n\nPAYMENT FLOW:\n1. Frontend creates order → Gets clientSecret\n2. Frontend shows payment form → User pays\n3. Stripe processes payment\n4. Webhook updates order status automatically\n5. Frontend checks status → Shows confirmation\n\nPAYMENT STATUS:\n- Pending: Order created, waiting for payment\n- Completed: Payment successful ✅\n- Failed: Payment declined ❌\n- Processing: Still being processed ⏳\n\nAUTOMATIC BEHAVIORS:\n- Cart cleared when payment succeeds\n- Order created before payment (status: Pending)\n- Webhook updates status instantly\n- Cart remains if payment fails (can retry)\n\nBENEFITS:\n- Simpler workflow (1 API instead of 2)\n- Clear payment status tracking\n- Automatic cart management\n- Stripe handles card security\n- Easy to implement on frontend"
+      }
+    }
+  ]
+}

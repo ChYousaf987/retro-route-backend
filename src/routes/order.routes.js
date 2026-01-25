@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import {
   createOrder,
+  checkPaymentStatus,
   getAllOrders,
   getMonthlySales,
   getOrderSales,
@@ -25,6 +26,7 @@ const orderRouter = Router();
 
 // Customer routes
 orderRouter.route('/create-order').post(authVerify, createOrder);
+orderRouter.route('/check-payment-status').post(authVerify, checkPaymentStatus);
 orderRouter.route('/get-all-orders').get(authVerify, getAllOrders);
 
 // Admin routes
