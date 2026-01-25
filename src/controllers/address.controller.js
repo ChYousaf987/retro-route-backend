@@ -56,26 +56,18 @@ export const updateAddress = asyncHandler(async (req, res) => {
     req.body;
   const userId = req.user?._id;
 
-  if (!userId) {
-    throw new apiError(401, 'Unauthorized - user not found');
-  }
-
   const address = await Address.findOne({ userId });
 
-  if (!address) {
-    return res.status(404).json(new apiResponse(404, 'Address not found'));
+  if (address) {
+    if (fullName !== undefined) address.fullName = fullName;
+    if (addressLine !== undefined) address.addressLine = addressLine;
+    if (city !== undefined) address.city = city;
+    if (state !== undefined) address.state = state;
+    if (pinCode !== undefined) address.pinCode = pinCode;
+    if (country !== undefined) address.country = country;
+    if (mobile !== undefined) address.mobile = mobile;
+    await address.save();
   }
-
-  // Update fields (only provided ones will change)
-  if (fullName) address.fullName = fullName;
-  if (addressLine) address.addressLine = addressLine;
-  if (city) address.city = city;
-  if (state) address.state = state;
-  if (pinCode) address.pinCode = pinCode;
-  if (country) address.country = country;
-  if (mobile) address.mobile = mobile;
-
-  await address.save();
 
   return res
     .status(200)
