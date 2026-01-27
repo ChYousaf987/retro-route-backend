@@ -338,3 +338,19 @@ export const getProductsByCategory = asyncHandler(async (req, res) => {
     })
   );
 });
+
+export const getProduct = asyncHandler(async (req, res) => {
+  const { productId } = req.params;
+  const product = await Product.findById(productId).populate(
+    'category',
+    'name'
+  );
+
+  if (!product) {
+    return res.status(404).json(new apiError(404, 'Product not found'));
+  }
+
+  return res
+    .status(200)
+    .json(new apiResponse(200, 'Product fetched successfully', product));
+});
