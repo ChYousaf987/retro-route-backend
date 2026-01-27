@@ -39,7 +39,7 @@ const generateOTP = () => {
 // register Api - Step 1: Send OTP
 export const register = asyncHandler(async (req, res) => {
   try {
-    const { name, email, password, role, permissions } = req.body;
+    const { name, email, password, role, permissions, directCreate } = req.body;
 
     if (!name || !email || !password) {
       return res
@@ -53,6 +53,29 @@ export const register = asyncHandler(async (req, res) => {
       return res
         .status(400)
         .json(new apiError(400, 'User already exists with this email'));
+    }
+
+    // If directCreate is true and role is Admin or Driver, create user directly (no OTP)
+    if (directCreate && ['Admin', 'Driver'].includes(role)) {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const newUser = new User({
+        name,
+        email,
+        password: hashedPassword,
+        role,
+        permissions: permissions || [],
+        verifyEmail: true,
+      });
+      await newUser.save();
+      return res.status(201).json(
+        new apiResponse(
+          201,
+          'User created successfully. You can login directly.',
+          {
+            email,
+          }
+        )
+      );
     }
 
     // Generate OTP and expiry (10 minutes)
@@ -659,7 +682,6 @@ export const getAllUsers = asyncHandler(async (req, res) => {
     throw new apiError(500, 'Internal Server Error', false, error.message);
   }
 });
-
 
 // get all admins Api
 export const getAllAdmins = asyncHandler(async (req, res) => {
