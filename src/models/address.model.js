@@ -26,11 +26,19 @@ const addressSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    postalCode: {
+      type: String,
+      trim: true,
+    },
     country: {
       type: String,
       trim: true,
     },
     mobile: {
+      type: String,
+      trim: true,
+    },
+    phoneNumber: {
       type: String,
       trim: true,
     },

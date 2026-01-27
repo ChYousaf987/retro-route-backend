@@ -678,20 +678,39 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"addressLine\": \"123 Main Street\",\n    \"city\": \"New York\",\n    \"state\": \"NY\",\n    \"country\": \"USA\",\n    \"postalCode\": \"10001\",\n    \"phone\": \"+1234567890\"\n}"
+              "raw": "{\n    \"fullName\": \"John Doe\",\n    \"addressLine\": \"123 Main Street\",\n    \"city\": \"New York\",\n    \"state\": \"NY\",\n    \"country\": \"USA\",\n    \"postalCode\": \"10001\",\n    \"phoneNumber\": \"+1234567890\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/address/add-address",
+              "raw": "{{baseUrl}}/address/addresses",
               "host": ["{{baseUrl}}"],
-              "path": ["address", "add-address"]
+              "path": ["address", "addresses"]
             },
-            "description": "Add a new address for the logged in user"
+            "description": "Add a new address for the logged in user. Fields: fullName, addressLine, city, state, country, postalCode, phoneNumber"
+          }
+        },
+        {
+          "name": "Get Addresses",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/address/addresses",
+              "host": ["{{baseUrl}}"],
+              "path": ["address", "addresses"]
+            },
+            "description": "Get all addresses for the logged in user. Response includes: fullName, addressLine, city, state, country, postalCode, phoneNumber, phone"
           }
         },
         {
           "name": "Update Address",
           "request": {
-            "method": "PUT",
+            "method": "PATCH",
             "header": [
               {
                 "key": "Authorization",
@@ -706,14 +725,21 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"addressId\": \"ADDRESS_ID_HERE\",\n    \"addressLine\": \"456 Updated Street\",\n    \"city\": \"Los Angeles\",\n    \"state\": \"CA\",\n    \"country\": \"USA\",\n    \"postalCode\": \"90001\",\n    \"phone\": \"+1987654321\"\n}"
+              "raw": "{\n    \"fullName\": \"John Doe Updated\",\n    \"addressLine\": \"456 Updated Street\",\n    \"city\": \"Los Angeles\",\n    \"state\": \"CA\",\n    \"country\": \"USA\",\n    \"postalCode\": \"90001\",\n    \"phoneNumber\": \"+1987654321\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/address/update-address",
+              "raw": "{{baseUrl}}/address/addresses/:addressId",
               "host": ["{{baseUrl}}"],
-              "path": ["address", "update-address"]
+              "path": ["address", "addresses", ":addressId"],
+              "variable": [
+                {
+                  "key": "addressId",
+                  "value": "ADDRESS_ID_HERE",
+                  "description": "The ID of the address to update"
+                }
+              ]
             },
-            "description": "Update an existing address"
+            "description": "Update an existing address. Optional fields: fullName, addressLine, city, state, country, postalCode, phoneNumber"
           }
         },
         {
@@ -725,23 +751,21 @@
                 "key": "Authorization",
                 "value": "Bearer {{accessToken}}",
                 "type": "text"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json",
-                "type": "text"
               }
             ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"addressId\": \"ADDRESS_ID_HERE\"\n}"
-            },
             "url": {
-              "raw": "{{baseUrl}}/address/delete-address",
+              "raw": "{{baseUrl}}/address/addresses/:addressId",
               "host": ["{{baseUrl}}"],
-              "path": ["address", "delete-address"]
+              "path": ["address", "addresses", ":addressId"],
+              "variable": [
+                {
+                  "key": "addressId",
+                  "value": "ADDRESS_ID_HERE",
+                  "description": "The ID of the address to delete"
+                }
+              ]
             },
-            "description": "Delete an address"
+            "description": "Delete an address by ID"
           }
         }
       ]

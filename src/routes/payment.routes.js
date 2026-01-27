@@ -22,5 +22,7 @@ router.post('/create-intent', authVerify, createPaymentIntent);
 router.post('/process', authVerify, processPayment);
 
 // Stripe webhook - handles payment success/failure
+// NOTE: This route must use express.raw() middleware, configured in app.js
+router.post('/webhook', handleStripeWebhook);
 
 export default router;

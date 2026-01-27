@@ -7,8 +7,17 @@ import { apiResponse } from '../utils/apiResponse.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 
 export const addAddress = asyncHandler(async (req, res) => {
-  const { fullName, addressLine, city, state, pinCode, country, mobile } =
-    req.body;
+  const {
+    fullName,
+    addressLine,
+    city,
+    state,
+    pinCode,
+    postalCode,
+    country,
+    mobile,
+    phoneNumber,
+  } = req.body;
   const userId = req.user?._id;
 
   if (!userId) {
@@ -22,8 +31,10 @@ export const addAddress = asyncHandler(async (req, res) => {
     city,
     state,
     pinCode,
+    postalCode,
     country,
     mobile,
+    phoneNumber,
   });
 
   // Add address reference to user
@@ -47,7 +58,7 @@ export const getAddresses = asyncHandler(async (req, res) => {
 
   let addresses = await Address.find({ userId }).lean();
 
-  // Map 'mobile' to 'phone' and remove 'mobile' from each address
+  // Map 'mobile' to 'phone' and include all fields
   addresses = addresses.map(addr => {
     const { mobile, ...rest } = addr;
 
@@ -63,8 +74,17 @@ export const getAddresses = asyncHandler(async (req, res) => {
 });
 
 export const updateAddress = asyncHandler(async (req, res) => {
-  const { fullName, addressLine, city, state, pinCode, country, mobile } =
-    req.body;
+  const {
+    fullName,
+    addressLine,
+    city,
+    state,
+    pinCode,
+    postalCode,
+    country,
+    mobile,
+    phoneNumber,
+  } = req.body;
   const userId = req.user?._id;
 
   if (!userId) {
@@ -83,8 +103,10 @@ export const updateAddress = asyncHandler(async (req, res) => {
   if (city !== undefined) address.city = city;
   if (state !== undefined) address.state = state;
   if (pinCode !== undefined) address.pinCode = pinCode;
+  if (postalCode !== undefined) address.postalCode = postalCode;
   if (country !== undefined) address.country = country;
   if (mobile !== undefined) address.mobile = mobile;
+  if (phoneNumber !== undefined) address.phoneNumber = phoneNumber;
 
   await address.save();
 

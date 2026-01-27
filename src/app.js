@@ -1,6 +1,7 @@
 import express, { urlencoded } from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import { handleStripeWebhook } from './controllers/payment.controller.js';
 
 const app = express();
 
@@ -10,6 +11,13 @@ app.use(
     origin: ['http://localhost:5173'],
     credentials: true,
   })
+);
+
+// IMPORTANT: Stripe webhook needs raw body, must be before express.json()
+app.post(
+  '/api/v1/payment/webhook',
+  express.raw({ type: 'application/json' }),
+  handleStripeWebhook
 );
 
 app.use(express.json({ limit: '16kb' }));
