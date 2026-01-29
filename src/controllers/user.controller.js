@@ -39,7 +39,7 @@ const generateOTP = () => {
 // register Api - Step 1: Send OTP
 export const register = asyncHandler(async (req, res) => {
   try {
-    const { name, email, password, role, permissions } = req.body;
+    const { name, email, password, role, permissions, directCreate } = req.body;
 
     if (!name || !email || !password) {
       return res
@@ -53,6 +53,29 @@ export const register = asyncHandler(async (req, res) => {
       return res
         .status(400)
         .json(new apiError(400, 'User already exists with this email'));
+    }
+
+    // If directCreate is true and role is Admin or Driver, create user directly (no OTP)
+    if (directCreate && ['Admin', 'Driver'].includes(role)) {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const newUser = new User({
+        name,
+        email,
+        password: hashedPassword,
+        role,
+        permissions: permissions || [],
+        verifyEmail: true,
+      });
+      await newUser.save();
+      return res.status(201).json(
+        new apiResponse(
+          201,
+          'User created successfully. You can login directly.',
+          {
+            email,
+          }
+        )
+      );
     }
 
     // Generate OTP and expiry (10 minutes)
@@ -649,71 +672,11 @@ export const updateUserDetails = asyncHandler(async (req, res) => {
 // get all users Api
 export const getAllUsers = asyncHandler(async (req, res) => {
   try {
-    const users = await User.find().select('createdAt');
-
-    const today = new Date();
-
-    // Today
-    const startToday = startOfDay(today);
-    const endToday = endOfDay(today);
-
-    // Yesterday
-    const yesterday = subDays(today, 1);
-    const startYesterday = startOfDay(yesterday);
-    const endYesterday = endOfDay(yesterday);
-
-    // This Week
-    const startThisWeek = startOfWeek(today);
-    const endThisWeek = endOfWeek(today);
-
-    // Last Week
-    const lastWeek = subWeeks(today, 1);
-    const startLastWeek = startOfWeek(lastWeek);
-    const endLastWeek = endOfWeek(lastWeek);
-
-    let totalUsers = 0;
-    let todayUsers = 0;
-    let yesterdayUsers = 0;
-    let thisWeekUsers = 0;
-    let lastWeekUsers = 0;
-
-    for (const user of users) {
-      const date = user.createdAt;
-
-      totalUsers++;
-
-      if (date >= startToday && date <= endToday) todayUsers++;
-      if (date >= startYesterday && date <= endYesterday) yesterdayUsers++;
-      if (date >= startThisWeek && date <= endThisWeek) thisWeekUsers++;
-      if (date >= startLastWeek && date <= endLastWeek) lastWeekUsers++;
-    }
-
-    // Today %
-    let todayPercentage = 0;
-    if (yesterdayUsers > 0) {
-      todayPercentage = ((todayUsers - yesterdayUsers) / yesterdayUsers) * 100;
-    } else if (todayUsers > 0) {
-      todayPercentage = 100;
-    }
-
-    // Total %
-    let totalPercentage = 0;
-    if (lastWeekUsers > 0) {
-      totalPercentage = ((thisWeekUsers - lastWeekUsers) / lastWeekUsers) * 100;
-    }
-
-    const responseData = {
-      totalUsers,
-      todayUsers,
-      todayPercentage: Number(todayPercentage.toFixed(2)),
-      totalPercentage: Number(totalPercentage.toFixed(2)),
-    };
+    const users = await User.find().select('-password');
 
     return res
       .status(200)
-      .json(
-        new apiResponse(200, 'All users fetched successfully', responseData)
-      );
+      .json(new apiResponse(200, 'All users fetched successfully', users));
   } catch (error) {
     console.log('Error in getAllUsers: ', error);
     throw new apiError(500, 'Internal Server Error', false, error.message);

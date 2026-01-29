@@ -5,6 +5,7 @@ import {
   addProduct,
   deleteProduct,
   getAllProducts,
+  getProduct,
   getProductsByCategory,
   updateProduct,
 } from '../controllers/product.controller.js';
@@ -16,6 +17,7 @@ productRouter
   .post(authVerify, upload.array('images', 4), addProduct);
 productRouter.route('/get-all-products').get(getAllProducts);
 productRouter.route('/category/:categoryId').get(getProductsByCategory);
+productRouter.route('/get-product/:productId').get(getProduct);
 productRouter
   .route('/update-product/:productId')
   .put(authVerify, upload.array('images', 4), updateProduct);

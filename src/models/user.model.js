@@ -33,9 +33,10 @@ const userSchema = new mongoose.Schema(
       enum: ['Active', 'InActive', 'Suspended'],
       default: 'Active',
     },
+    // User roles: SuperAdmin, Admin, Driver, User
     role: {
       type: String,
-      enum: ['User', 'Admin', 'SuperAdmin', 'Driver'],
+      enum: ['SuperAdmin', 'Admin', 'Driver', 'User'],
       default: 'User',
     },
     // Driver specific fields

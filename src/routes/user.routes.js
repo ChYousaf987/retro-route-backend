@@ -15,7 +15,7 @@ import {
   verifyRegistrationOTP,
   resendRegistrationOTP,
 } from '../controllers/user.controller.js';
-import { authVerify } from '../middlewares/auth.middleware.js';
+import { authVerify, authorizeRoles } from '../middlewares/auth.middleware.js';
 import { upload } from '../middlewares/multer.middleware.js';
 
 const userRouter = Router();
@@ -40,10 +40,14 @@ userRouter
 userRouter.route('/reset-password').put(resetPassword);
 
 // admin routes
-userRouter.route('/get-all-admins').get(authVerify, getAllAdmins);
+userRouter
+  .route('/get-all-admins')
+  .get(authVerify, authorizeRoles('SuperAdmin', 'Admin'), getAllAdmins);
 userRouter
   .route('/update-admin-details/:adminId')
-  .put(authVerify, updateAdminDetails);
-userRouter.route('/delete-admin/:adminId').delete(authVerify, deleteAdmin);
+  .put(authVerify, authorizeRoles('SuperAdmin', 'Admin'), updateAdminDetails);
+userRouter
+  .route('/delete-admin/:adminId')
+  .delete(authVerify, authorizeRoles('SuperAdmin'), deleteAdmin);
 
 export { userRouter };
