@@ -4,6 +4,7 @@ import { Order } from '../models/order.model.js';
 import { apiError } from '../utils/apiError.js';
 import { apiResponse } from '../utils/apiResponse.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
+import mongoose from 'mongoose';
 
 // Create a review for a product
 export const createReview = asyncHandler(async (req, res) => {
@@ -12,20 +13,14 @@ export const createReview = asyncHandler(async (req, res) => {
     const { productId, rating, title, comment, images = [] } = req.body;
 
     if (!productId || !rating || !title || !comment) {
-      return res
-        .status(400)
-        .json(
-          new apiError(
-            400,
-            'Product ID, rating, title, and comment are required'
-          )
-        );
+      throw new apiError(
+        400,
+        'Product ID, rating, title, and comment are required'
+      );
     }
 
     if (rating < 1 || rating > 5) {
-      return res
-        .status(400)
-        .json(new apiError(400, 'Rating must be between 1 and 5'));
+      throw new apiError(400, 'Rating must be between 1 and 5');
     }
 
     // Verify user has purchased this product
@@ -37,11 +32,7 @@ export const createReview = asyncHandler(async (req, res) => {
     if (!userOrder) {
       return res
         .status(400)
-        .json(
-          new apiError(400, 'You can only review products you have purchased')
-        );
-    }
-
+      throw new apiError(400, 'You can only review products you have purchased'
     // Check if user already reviewed this product
     const existingReview = await Review.findOne({ userId, productId });
     if (existingReview) {
@@ -49,9 +40,7 @@ export const createReview = asyncHandler(async (req, res) => {
         .status(400)
         .json(new apiError(400, 'You have already reviewed this product'));
     }
-
-    const review = await Review.create({
-      userId,
+throw new apiError(400, 'You have already reviewed this product'
       productId,
       rating,
       title,
@@ -73,11 +62,11 @@ export const createReview = asyncHandler(async (req, res) => {
     console.log('Error in create review: ', error);
     throw new apiError(500, 'Internal Server Error', false, error.message);
   }
-});
-
-// Get reviews for a product
-export const getProductReviews = asyncHandler(async (req, res) => {
-  try {
+});populatedReview, 'Review created successfully')
+      );
+  } catch (error) {
+    console.log('Error in create review: ', error);
+    throw new apiError(500
     const { productId } = req.params;
     const { page = 1, limit = 10, sortBy = 'createdAt' } = req.query;
 
@@ -95,20 +84,20 @@ export const getProductReviews = asyncHandler(async (req, res) => {
     const avgRating = await Review.aggregate([
       { $match: { productId: require('mongoose').Types.ObjectId(productId) } },
       { $group: { _id: null, avgRating: { $avg: '$rating' } } },
-    ]);
+    ]);new mongoose
 
     res.status(200).json(
-      new apiResponse(200, 'Reviews fetched successfully', {
+      new apiResponse(200, {
         reviews,
         totalReviews,
         averageRating: avgRating[0]?.avgRating || 0,
         currentPage: parseInt(page),
         totalPages: Math.ceil(totalReviews / limit),
-      })
+      }, 'Reviews fetched successfully')
     );
   } catch (error) {
     console.log('Error in get product reviews: ', error);
-    throw new apiError(500, 'Internal Server Error', false, error.message);
+    throw new apiError(500, error.message);
   }
 });
 
@@ -123,10 +112,10 @@ export const getUserReviews = asyncHandler(async (req, res) => {
 
     res
       .status(200)
-      .json(new apiResponse(200, 'User reviews fetched successfully', reviews));
+      .json(new apiResponse(200, reviews, 'User reviews fetched successfully'));
   } catch (error) {
     console.log('Error in get user reviews: ', error);
-    throw new apiError(500, 'Internal Server Error', false, error.message);
+    throw new apiError(500, error.message);
   }
 });
 
@@ -140,21 +129,15 @@ export const updateReview = asyncHandler(async (req, res) => {
     const review = await Review.findById(reviewId);
 
     if (!review) {
-      return res.status(404).json(new apiError(404, 'Review not found'));
+      throw new apiError(404, 'Review not found');
     }
 
     if (review.userId.toString() !== userId.toString()) {
-      return res
-        .status(403)
-        .json(
-          new apiError(403, 'You are not authorized to update this review')
-        );
+      throw new apiError(403, 'You are not authorized to update this review');
     }
 
     if (rating && (rating < 1 || rating > 5)) {
-      return res
-        .status(400)
-        .json(new apiError(400, 'Rating must be between 1 and 5'));
+      throw new apiError(400, 'Rating must be between 1 and 5');
     }
 
     const updatedReview = await Review.findByIdAndUpdate(
@@ -178,10 +161,10 @@ export const updateReview = asyncHandler(async (req, res) => {
     throw new apiError(500, 'Internal Server Error', false, error.message);
   }
 });
-
-// Delete review
-export const deleteReview = asyncHandler(async (req, res) => {
-  try {
+updatedReview, 'Review updated successfully'));
+  } catch (error) {
+    console.log('Error in update review: ', error);
+    throw new apiError(500
     const userId = req.user?._id;
     const { reviewId } = req.params;
 
@@ -194,23 +177,19 @@ export const deleteReview = asyncHandler(async (req, res) => {
     if (review.userId.toString() !== userId.toString()) {
       return res
         .status(403)
-        .json(
-          new apiError(403, 'You are not authorized to delete this review')
-        );
+      throw new apiError(404, 'Review not found');
+    }
+
+    if (review.userId.toString() !== userId.toString()) {
+      throw new apiError(403, 'You are not authorized to delete this review');
     }
 
     await Review.findByIdAndDelete(reviewId);
 
-    res.status(200).json(new apiResponse(200, 'Review deleted successfully'));
+    res.status(200).json(new apiResponse(200, null, 'Review deleted successfully'));
   } catch (error) {
     console.log('Error in delete review: ', error);
-    throw new apiError(500, 'Internal Server Error', false, error.message);
-  }
-});
-
-// Mark review as helpful
-export const markHelpful = asyncHandler(async (req, res) => {
-  try {
+    throw new apiError(500
     const { reviewId } = req.params;
     const { helpful = true } = req.body;
 
@@ -227,12 +206,20 @@ export const markHelpful = asyncHandler(async (req, res) => {
     }
 
     await review.save();
+throw new apiError(404, 'Review not found');
+    }
+
+    if (helpful) {
+      review.helpful += 1;
+    } else {
+      review.unhelpful += 1;
+    }
+
+    await review.save();
 
     res
       .status(200)
-      .json(new apiResponse(200, 'Review marked successfully', review));
+      .json(new apiResponse(200, review, 'Review marked successfully'));
   } catch (error) {
     console.log('Error in mark helpful: ', error);
-    throw new apiError(500, 'Internal Server Error', false, error.message);
-  }
-});
+    throw new apiError(500

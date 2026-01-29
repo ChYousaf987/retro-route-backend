@@ -19,6 +19,6 @@ router.post('/create', authVerify, createReview);
 router.get('/user/my-reviews', authVerify, getUserReviews);
 router.put('/update/:reviewId', authVerify, updateReview);
 router.delete('/delete/:reviewId', authVerify, deleteReview);
-router.patch('/helpful/:reviewId', markHelpful);
+router.patch('/helpful/:reviewId', authVerify, markHelpful);
 
 export default router;
