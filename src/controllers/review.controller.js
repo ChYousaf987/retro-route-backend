@@ -23,15 +23,11 @@ export const createReview = asyncHandler(async (req, res) => {
       throw new apiError(400, 'Rating must be between 1 and 5');
     }
 
-    // Verify user has purchased this product
+    // Check if user has purchased this product (for verified badge)
     const userOrder = await Order.findOne({
       userId,
       'products.productId': productId,
     });
-
-    if (!userOrder) {
-      throw new apiError(400, 'You can only review products you have purchased');
-    }
 
     // Check if user already reviewed this product
     const existingReview = await Review.findOne({ userId, productId });
@@ -46,7 +42,7 @@ export const createReview = asyncHandler(async (req, res) => {
       title,
       comment,
       images,
-      verified: true, // Mark as verified since user purchased the product
+      verified: !!userOrder, // Mark as verified only if user purchased the product
     });
 
     const populatedReview = await Review.findById(review._id)
