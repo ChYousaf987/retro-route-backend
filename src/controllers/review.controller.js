@@ -30,17 +30,17 @@ export const createReview = asyncHandler(async (req, res) => {
     });
 
     if (!userOrder) {
-      return res
-        .status(400)
-      throw new apiError(400, 'You can only review products you have purchased'
+      throw new apiError(400, 'You can only review products you have purchased');
+    }
+
     // Check if user already reviewed this product
     const existingReview = await Review.findOne({ userId, productId });
     if (existingReview) {
-      return res
-        .status(400)
-        .json(new apiError(400, 'You have already reviewed this product'));
+      throw new apiError(400, 'You have already reviewed this product');
     }
-throw new apiError(400, 'You have already reviewed this product'
+
+    const review = await Review.create({
+      userId,
       productId,
       rating,
       title,
@@ -56,17 +56,17 @@ throw new apiError(400, 'You have already reviewed this product'
     res
       .status(201)
       .json(
-        new apiResponse(201, 'Review created successfully', populatedReview)
+        new apiResponse(201, populatedReview, 'Review created successfully')
       );
   } catch (error) {
     console.log('Error in create review: ', error);
     throw new apiError(500, 'Internal Server Error', false, error.message);
   }
-});populatedReview, 'Review created successfully')
-      );
-  } catch (error) {
-    console.log('Error in create review: ', error);
-    throw new apiError(500
+});
+
+// Get product reviews
+export const getProductReviews = asyncHandler(async (req, res) => {
+  try {
     const { productId } = req.params;
     const { page = 1, limit = 10, sortBy = 'createdAt' } = req.query;
 
@@ -82,9 +82,9 @@ throw new apiError(400, 'You have already reviewed this product'
 
     // Calculate average rating
     const avgRating = await Review.aggregate([
-      { $match: { productId: require('mongoose').Types.ObjectId(productId) } },
+      { $match: { productId: new mongoose.Types.ObjectId(productId) } },
       { $group: { _id: null, avgRating: { $avg: '$rating' } } },
-    ]);new mongoose
+    ]);
 
     res.status(200).json(
       new apiResponse(200, {
@@ -155,28 +155,22 @@ export const updateReview = asyncHandler(async (req, res) => {
 
     res
       .status(200)
-      .json(new apiResponse(200, 'Review updated successfully', updatedReview));
+      .json(new apiResponse(200, updatedReview, 'Review updated successfully'));
   } catch (error) {
     console.log('Error in update review: ', error);
     throw new apiError(500, 'Internal Server Error', false, error.message);
   }
 });
-updatedReview, 'Review updated successfully'));
-  } catch (error) {
-    console.log('Error in update review: ', error);
-    throw new apiError(500
+
+// Delete review
+export const deleteReview = asyncHandler(async (req, res) => {
+  try {
     const userId = req.user?._id;
     const { reviewId } = req.params;
 
     const review = await Review.findById(reviewId);
 
     if (!review) {
-      return res.status(404).json(new apiError(404, 'Review not found'));
-    }
-
-    if (review.userId.toString() !== userId.toString()) {
-      return res
-        .status(403)
       throw new apiError(404, 'Review not found');
     }
 
@@ -189,24 +183,20 @@ updatedReview, 'Review updated successfully'));
     res.status(200).json(new apiResponse(200, null, 'Review deleted successfully'));
   } catch (error) {
     console.log('Error in delete review: ', error);
-    throw new apiError(500
+    throw new apiError(500, 'Internal Server Error', false, error.message);
+  }
+});
+
+// Mark review as helpful or unhelpful
+export const markHelpful = asyncHandler(async (req, res) => {
+  try {
     const { reviewId } = req.params;
     const { helpful = true } = req.body;
 
     const review = await Review.findById(reviewId);
 
     if (!review) {
-      return res.status(404).json(new apiError(404, 'Review not found'));
-    }
-
-    if (helpful) {
-      review.helpful += 1;
-    } else {
-      review.unhelpful += 1;
-    }
-
-    await review.save();
-throw new apiError(404, 'Review not found');
+      throw new apiError(404, 'Review not found');
     }
 
     if (helpful) {
@@ -222,4 +212,6 @@ throw new apiError(404, 'Review not found');
       .json(new apiResponse(200, review, 'Review marked successfully'));
   } catch (error) {
     console.log('Error in mark helpful: ', error);
-    throw new apiError(500
+    throw new apiError(500, 'Internal Server Error', false, error.message);
+  }
+});
